@@ -3,7 +3,6 @@
 </p>
 
 <center> <h1>LABORATORIO No 1 - ETL</h1> </center>
-<center>============================================================</center>
 
 Propósito del laboratorio: construir un proceso ETL que permita limpiar, transformar y 
 preparar un dataset de usuarios para entrenar y evaluar un modelo de regresión logística 
