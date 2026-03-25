@@ -2,13 +2,13 @@
   <img src="assets/banner_laboratorio.png" width="300">
 </p>
 
-<center> <h1>LABORATORIO No 1 - ETL</h1> </center>
+# Laboratorio No 2
 
 Propósito del laboratorio: construir un proceso ETL que permita limpiar, transformar y 
 preparar un dataset de usuarios para entrenar y evaluar un modelo de regresión logística 
 capaz de predecir si un usuario convertirá o no a un plan pago al finalizar su trial.
 
-# INTEGRANTES
+## Integrantes
 
 **Nombre:** Roberto José Guerrero Criollo  
 *Correo:* roberto_jos.guerrero@uao.edu.co  
@@ -16,88 +16,84 @@ capaz de predecir si un usuario convertirá o no a un plan pago al finalizar su 
 **Nombre:** Melissa Muñoz Buitron  
 *Correo:* melissa.munoz@uao.edu.co
 
-Para la importacion de los datos se utilizan las siguientes librerias
+## ETL: Extracción, transformación y carga de datos🚦
 
-```python
-import os
-import numpy as np
+* **Fase 1: Extracción de datos** – Selección de fuentes de datos adecuadas, carga de datos brutos desde archivos CSV mediante Python, estandarización y almacenamiento seguro en una base de datos SQLite.
 
-# Parche de compatibilidad con sweetviz (debe ir ANTES de importar sweetviz)
-if not hasattr(np, 'VisibleDeprecationWarning'):
-    np.VisibleDeprecationWarning = DeprecationWarning
+* **Fase 2: Limpieza y transformación de datos** – Análisis exploratorio de datos (EDA), gestión de valores faltantes y duplicados, fusión de conjuntos de datos y aplicación de transformaciones y estandarizaciones de datos, identificación de outliers, imputación de datos, feature engineering
 
-import pandas as pd
-pd.options.mode.chained_assignment = None
+* **Fase 3: Carga de datos y pipeline ETL** – Carga del conjunto de datos final en una tabla dedicada de la base de datos SQLite, automatización de todo el proceso ETL mediante Prefect y creación de un modelo de regresión logística.
 
-import sweetviz as sv
-import matplotlib.pyplot as plt
-import json
-import sqlite3
-from sklearn.preprocessing import LabelEncoder
-from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import RobustScaler
-from sklearn.linear_model import LogisticRegression
-from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, confusion_matrix, roc_auc_score
-import seaborn as sns
-from scipy.stats import gaussian_kde, mstats
-```
+**Pasos clave en esta fase:**
+1. 📁 **Fuentes de datos:** Selección de archivos CSV que contienen las variables de una plataforma de servicios en línea que ofrece un periodo de trial a nuevos usuarios.
 
-# CARGAR DATOS
+2. 🛠️ **Extracción de datos:** Cargar los datos en DataFrames de pandas, estandarizarlos y almacenarlos en una base de datos SQLite para su posterior procesamiento.
 
-Se carga el dataset requerido para este laboratorio. Este datasetn cuenta con 2.545 registros.
+3. 🧼 **Limpieza de datos:**
+* Manejo de valores faltantes mediante la sustitución o eliminación de inconsistencias.
 
-```python
-trial_conversion_users = pd.read_csv(r"C:\Users\Molly\Desktop\UAO\CLASE ETL\Lab_2\lab2_trial_conversion_users.csv")
-data_dictionary = pd.read_csv(r"C:\Users\Molly\Desktop\UAO\CLASE ETL\Lab_2\lab2_data_dictionary.csv")
+* Estandarización de nombres y formatos de columnas.
 
-print("Dataset principal:",trial_conversion_users.shape)
-print("Dataset diccionario:",data_dictionary.shape)
-```
+* Eliminación de registros duplicados.
+
+4. 🔍 **Análisis exploratorio de datos (EDA):** Identificación de distribuciones, patrones y correlaciones de datos, y realización de análisis estadísticos y visualización de relaciones.
+
+5. 🔄 **Transformación de datos:**
+* Filtrado y selección de características relevantes.
+
+* Reclasificación de variables categóricas.
+
+* Identificación de outliers
+
+* Imputación de datos
+
+* Feature engineering
+
+6. 🧾 **Carga del conjunto de datos final:** Almacenamiento del conjunto de datos completamente procesado en una nueva tabla estructurada de PostgreSQL para su posterior uso en análisis e informes.
+
+7. 🤖 **Automatización de ETL con Prefect:**
+* Orquestación del flujo de trabajo ETL completo mediante Prefect.
+
+* Automatización de la secuencia de tareas: preprocesamiento, creación de tablas de preparación, extracción, transformación y carga.
+
+* Entrenamiento y evaluación del modelo de regresión logística.
+
+## Objetivo del proyecto 🧠
+
+Una plataforma de servicios en línea ofrece un periodo de trial a nuevos usuarios. La organización desea identificar, con base en la actividad observada durante ese periodo, qué usuarios tienen mayor probabilidad de contratar un plan de pago. El reto no consiste solo en entrenar un modelo, sino en construir un proceso ETL reproducible que deje los datos listos para análisis y predicción. 
+
+## Tecnologías utilizadas 🛠
+
+- 👩‍💻 **Lenguaje de programación:** Python
+- 💻 **Entornos:**
+  - 📔 **Jupyter Notebook:** Para el pipeline de la exploración, transformación y visualización interactiva de datos.
+  - 🛫 **Prefect:** Para la automatización y orquestación de flujos de trabajo ETL.
+- 🗄️ **Base de datos:** SQLite
+- 📦 **Bibliotecas:**
+  - 🐼 **pandas:** Para la manipulación y el análisis de datos.
+  - 🧱 **sqlite3:** Para la conexión a la base de datos y las consultas.
+  - 📉 **seaborn y matplotlib:** Visualización de datos.
+  - 🧪 **scikit-learn:** Análisis estadístico y transformaciones.
+  - ⚖️ **imbalanced-learn:** Técnicas de sobremuestreo para equilibrar los datos.
+  - ⏱️ **perfect:** Orquestación y programación de flujos de trabajo.
+
+## Cargar Datos
+
+Se carga el dataset requerido para este laboratorio. Este dataset cuenta con:.
 
 ```text
 Dataset principal: (2545, 27)
 Dataset diccionario: (27, 3)
 ```
-
-# VISUALIZACIÓN DE LOS DATASET
-
-En esta sección se muestran el dataset que fue cargado previamente para su posterior análisis.
-
-## Dataset principal
-
-```python
-trial_conversion_users
-```
-
-_Visualización tabular omitida en el README para mantenerlo legible en GitHub._
-
-El siguiente dataset solo entrega información descriptiva de las variables que trae el dataset principal.
-
-```python
-data_dictionary
-```
-
-_Visualización tabular omitida en el README para mantenerlo legible en GitHub._
-
 # EDA
 
-En esta sección se realiza el análisis exploratorio de los datos (EDA) con reportes visuales mediante la librería Sweetviz, el cual nos da en primera instancia información de como esta estructurada el dataset
+En esta sección se realiza el análisis exploratorio de los datos (EDA) con reportes visuales mediante la librería Sweetviz, el cual nos da en primera instancia información de cómo está estructurado el dataset
 
-```python
-eda_trial_conversion_users = sv.analyze(trial_conversion_users)
-eda_trial_conversion_users.show_notebook()
-```
+## Limpieza y Transformación del dataset
 
-_Salida interactiva generada en el notebook. No se incrusta directamente en GitHub._
+En esta sección se realiza el proceso de limpieza y transformación del dataset. Para ello, se lleva a cabo la identificación y el análisis de la información contenida en el dataset, identificando tipo de datos, valores nulos, registros duplicados, entre otros.
 
-# LIMPIEZA Y TRANSFORMACIÓN DEL DATASET
-
-En esta sección se realiza el proceso de limpieza y transformación del datasets. Para ello, se lleva a cabo la identificación y el análisis de la información contenida en el dataset, identificando tipo de datos, valores nulos, registros duplicados, entre otros.
 A partir de este análisis, se procede a organizar, corregir y depurar la información, de manera que los datos queden estructurados y preparados para el entrenamiento de un modelo que permita predecir si un usuario convertirá o no a un plan pago al finalizar su trial.
-
-```python
-trial_conversion_users.info()
-```
 
 ```text
 <class 'pandas.core.frame.DataFrame'>
@@ -138,71 +134,19 @@ memory usage: 537.0+ KB
 
 Se puede evidenciar que hay columnas que les hace falta datos
 
-### Id_user duplicados
+## Id_user duplicados
 
-Se logra identificar que la varibale "user_id" tiene valores duplicados
-
-```python
-trial_conversion_users.duplicated(subset=["user_id"], keep=False).sum()
-```
-
-```text
-np.int64(90)
-```
-
-```python
-user_id_duplicados = trial_conversion_users[trial_conversion_users.duplicated(subset=["user_id"])]
-user_id_duplicados
-```
-
-_Visualización tabular omitida en el README para mantenerlo legible en GitHub._
-
-```python
-trial_conversion_users = eda_trial_conversion_users = trial_conversion_users.drop_duplicates(subset=["user_id"])
-trial_conversion_users
-```
-
-_Visualización tabular omitida en el README para mantenerlo legible en GitHub._
+Se logra identificar que la variable "user_id" tiene valores duplicados
 
 Se identificaron 45 registros duplicados en el dataset, lo que puede generar sesgos en el análisis y afectar el rendimiento del modelo al sobre-representar ciertos casos. Por esta razón, se toma la decisión de eliminarlos evitando distorsiones en las métricas y resultados del modelo a entrenar.
 
-### Normalización tamaño de letra
+## Normalización tamaño de letra
 
 En el dataset se evidenció la presencia de registros con nombres inconsistentes en su formato, algunos en mayúsculas, otros en minúsculas o con combinaciones de ambas. Esta variabilidad puede generar duplicidades lógicas y afectar la calidad del análisis. Por ello, se decidió normalizar los nombres a un formato estándar con la primera letra en mayúscula, garantizando consistencia en los datos y facilitando su correcto procesamiento y análisis.
 
-```python
-def normalizar_categoricas(df, columnas):
-    for col in columnas:
-        df[col] = df[col].str.strip().str.title()
-    return df
+## Normalización formato fecha
 
-# Aplicar
-columnas_a_normalizar = ["country", "device_type", "acquisition_channel", "gender", "city_tier", "preferred_plan_before_conversion", "selected_plan"]
-trial_conversion_users = normalizar_categoricas(trial_conversion_users, columnas_a_normalizar)
-
-# Verificar
-trial_conversion_users
-```
-
-_Visualización tabular omitida en el README para mantenerlo legible en GitHub._
-
-### Normalización formato fecha
-
-Se evidencia la presencia de múltiples formatos de fecha dentro del dataset, lo que puede generar inconsistencias en el análisis y errores en los procesos de transformación. Por esta razón, se realiza la conversión de todas las fechas a un formato estándar (DD/MM/YYYY), con el fin de gararntizar un correcto procesamiento
-
-```python
-# signup_date
-formatos_signup = trial_conversion_users["signup_date"].astype(str).apply(
-    lambda x: "YYYY-MM-DD" if x[4] == "-" else "DD/MM/YYYY"
-).value_counts()
-print("Formatos en signup_date:\n", formatos_signup)
-
-# trial_end_date
-formatos_trial = trial_conversion_users["trial_end_date"].astype(str).apply(
-    lambda x: "YYYY-MM-DD" if x[4] == "-" else "MM-DD-YYYY"
-).value_counts()
-print("\nFormatos en trial_end_date:\n", formatos_trial)
-```
+Se evidencia la presencia de múltiples formatos de fecha dentro del dataset, lo que puede generar inconsistencias en el análisis y errores en los procesos de transformación. Por esta razón, se realiza la conversión de todas las fechas a un formato estándar (DD/MM/YYYY), con el fin de garantizar un correcto procesamiento
 
 ```text
 Formatos en signup_date:
@@ -216,31 +160,9 @@ YYYY-MM-DD    2348
 MM-DD-YYYY     152
 Name: count, dtype: int64
 ```
-
-```python
-def normalizar_fechas(df, columnas):
-    for col in columnas:
-        df[col] = pd.to_datetime(
-            df[col], format="mixed", dayfirst=True
-        ).dt.strftime("%d/%m/%Y")
-    return df
-
-# Aplicar
-columnas_fechas = ["signup_date", "trial_end_date"]
-trial_conversion_users = normalizar_fechas(trial_conversion_users, columnas_fechas)
-
-trial_conversion_users
-```
-
-_Visualización tabular omitida en el README para mantenerlo legible en GitHub._
-
-### Valores nulos
+## Valores nulos
 
 En esta sección se evidencia que varias variables dentro del dataset presentan valores nulos, esto puede afectar la calidad del análisis y el desempeño de los modelos. Por esta razón, se procede a tratar estos valores mediante diferentes técnicas de imputación o limpieza.
-
-```python
-trial_conversion_users.isnull().sum()
-```
 
 ```text
 user_id                               0
@@ -272,70 +194,11 @@ converted_to_paid_plan                0
 selected_plan                         0
 dtype: int64
 ```
-
-```python
-def limpiar_columna_numerica(df, columna, simbolo):
-    df[columna] = df[columna].astype(str).str.replace(simbolo, "", regex=False)
-    df[columna] = pd.to_numeric(df[columna], errors="coerce")
-    return df
-
-# Aplicar
-trial_conversion_users = limpiar_columna_numerica(trial_conversion_users, "monthly_income_usd", "$")
-trial_conversion_users = limpiar_columna_numerica(trial_conversion_users, "discount_offered_pct", "%")
-# Verificar
-print(trial_conversion_users["monthly_income_usd"].value_counts())
-print(trial_conversion_users["discount_offered_pct"].value_counts())
-```
-
-```text
-monthly_income_usd
-250.0     112
-1616.0      6
-1488.0      5
-1034.0      5
-1307.0      5
-         ... 
-1943.0      1
-2085.0      1
-1387.0      1
-1184.0      1
-1501.0      1
-Name: count, Length: 1478, dtype: int64
-discount_offered_pct
-0     956
-10    485
-20    369
-15    367
-5     205
-25    118
-Name: count, dtype: int64
-```
-
-### Imputar valores "no registra"
+## Imputar valores "no registra"
 
 Teniendo en cuenta que las variables con valores nulos, como "age", "country", "device_type" y "monthly_income_usd", no presentan una alta relevancia para el modelo a desarrollar, se decide imputar dichos valores con la etiqueta "no registra". Esta decisión permite mantener la integridad del dataset sin introducir sesgos significativos en el modelo.
 
-```python
-def imputar_no_registra(df, columnas):
-    for col in columnas:
-        df[col] = df[col].fillna("No registra")
-    return df
-
-# Aplicar
-columnas_no_registra = ["age", "country", "device_type","monthly_income_usd"]
-trial_conversion_users = imputar_no_registra(trial_conversion_users, columnas_no_registra)
-
-# Verificar
-trial_conversion_users
-```
-
-_Visualización tabular omitida en el README para mantenerlo legible en GitHub._
-
-Ahora bien, dentro de los valores nulos se encuentran las variables "avg_session_minutes" y "satisfaction_score", las cuales son relevantes para el modelo, ya que aportan información directa sobre el comportamiento y la experiencia del usuario. Por esta razón se decide realizar un análisis descriptivo de ambas variables, con el fin de comprender su distribución y determinar que estrategia de imputación se utiliza para este caso.
-
-```python
-trial_conversion_users.isnull().sum()
-```
+Ahora bien, dentro de los valores nulos se encuentran las variables "avg_session_minutes" y "satisfaction_score", las cuales son relevantes para el modelo, ya que aportan información directa sobre el comportamiento y la experiencia del usuario. Por esta razón se decide realizar un análisis descriptivo de ambas variables, con el fin de comprender su distribución y determinar qué estrategia de imputación se utiliza para este caso.
 
 ```text
 user_id                               0
@@ -368,52 +231,7 @@ selected_plan                         0
 dtype: int64
 ```
 
-### Identificacion de outliers
-
-```python
-def identificar_outliers_iqr(df, columnas):
-    resultados = []
-    for col in columnas:
-        Q1 = df[col].quantile(0.25)
-        Q3 = df[col].quantile(0.75)
-        IQR = Q3 - Q1
-        limite_inferior = Q1 - 1.5 * IQR
-        limite_superior = Q3 + 1.5 * IQR
-        outliers = df[(df[col] < limite_inferior) | (df[col] > limite_superior)]
-        resultados.append({
-            "variable": col,
-            "Q1": Q1,
-            "Q3": Q3,
-            "IQR": IQR,
-            "limite_inferior": limite_inferior,
-            "limite_superior": limite_superior,
-            "n_outliers": len(outliers),
-            "pct_outliers": round(len(outliers) / len(df) * 100, 2)
-        })
-    return pd.DataFrame(resultados)
-
-# Aplicar
-columnas_numericas = [
-    "days_active_trial", "sessions_count", "avg_session_minutes",
-    "features_used", "last_activity_gap_days", "satisfaction_score"
-]
-
-resultado_outliers = identificar_outliers_iqr(trial_conversion_users, columnas_numericas)
-
-fig, axes = plt.subplots(2, 3, figsize=(14, 8))  # ← cambiado a 2x3
-
-for ax, col in zip(axes.flat, columnas_numericas):
-    ax.boxplot(trial_conversion_users[col].dropna(), patch_artist=True,
-               boxprops=dict(facecolor="#378ADD", alpha=0.7),
-               medianprops=dict(color="black", linewidth=2),
-               flierprops=dict(marker="o", markerfacecolor="#E24B4A", markersize=4, alpha=0.5))
-    ax.set_title(col, fontsize=9, fontweight="bold")
-    ax.set_xticks([])
-
-fig.suptitle("Identificación de outliers — método IQR", fontweight="bold", fontsize=13)
-plt.tight_layout()
-plt.show()
-```
+## Identificacion de outliers
 
 ![identificacion de outliers](assets/identificacion_de_outliers_1.png)
 
