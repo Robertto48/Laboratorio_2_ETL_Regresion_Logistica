@@ -233,42 +233,15 @@ dtype: int64
 
 ## Identificacion de outliers
 
+En el análisis de valores atípicos de las variables seleccionadas para el modelo se identificó que, en la mayoría de los casos, estos corresponden a comportamientos reales de los usuarios y no a errores en los datos. Por ello, las observaciones extremas en days_active_trial, sessions_count, features_used, last_activity_gap_days y satisfaction_score se conservaron, ya que representan patrones válidos como usuarios altamente activos, exploración intensiva de funcionalidades o períodos reales de inactividad. Únicamente en la variable avg_session_minutes se aplicó un proceso de winsorización, con el fin de reducir el efecto de valores excesivamente extremos sin eliminar información relevante del dataset.
+
 ![identificacion de outliers](assets/identificacion_de_outliers_1.png)
 
-```python
-trial_conversion_users["avg_session_minutes"] = mstats.winsorize(
-    trial_conversion_users["avg_session_minutes"], limits=[0, 0.05]
-)
+## Tratamiento de outliers
 
-# Verificar
-print(trial_conversion_users["avg_session_minutes"].describe().round(2))
-```
+El gráfico muestra el efecto de la winsorización sobre la variable avg_session_minutes, comparando la distribución original con la transformada. Inicialmente, la variable presenta una fuerte asimetría positiva, con una cola larga hacia la derecha debido a la presencia de valores extremos elevados. Después del proceso de winsorización, se observa que estos valores atípicos han sido recortados a un límite superior, lo que reduce significativamente la dispersión y elimina la influencia de extremos excesivos sin perder la estructura general de los datos. Como resultado, la distribución se vuelve más concentrada y estable, facilitando su uso en el modelo y disminuyendo el impacto que los outliers podrían tener en el ajuste de la regresión logística.
 
-```text
-count    2500.00
-mean       14.87
-std         6.67
-min         2.00
-25%        10.40
-50%        14.50
-75%        19.00
-max        29.80
-Name: avg_session_minutes, dtype: float64
-```
-
-### Imputacion de datos sobre la mediana
-
-```python
-# avg_session_minutes
-print("=== avg_session_minutes ===")
-print(trial_conversion_users["avg_session_minutes"].describe())
-print("Moda:", trial_conversion_users["avg_session_minutes"].mode()[0])
-
-# satisfaction_score
-print("\n=== satisfaction_score ===")
-print(trial_conversion_users["satisfaction_score"].describe())
-print("Moda:", trial_conversion_users["satisfaction_score"].mode()[0])
-```
+## Imputacion de datos sobre la mediana
 
 ```text
 === avg_session_minutes ===
@@ -295,60 +268,7 @@ Name: satisfaction_score, dtype: float64
 Moda: 10.0
 ```
 
-```python
-fig, axes = plt.subplots(2, 3, figsize=(15, 8))
-
-variables = ["avg_session_minutes", "satisfaction_score"]
-colores = ["#378ADD", "#1D9E75"]
-
-for i, (col, color) in enumerate(zip(variables, colores)):
-    data = trial_conversion_users[col].dropna()
-    media = data.mean()
-    mediana = data.median()
-
-    # Histograma
-    axes[i, 0].hist(data, bins=30, color=color, edgecolor="none", alpha=0.8)
-    axes[i, 0].set_title(f"{col} — histograma")
-    axes[i, 0].set_ylabel("Frecuencia")
-
-    # Densidad
-    kde = gaussian_kde(data)
-    x = np.linspace(data.min(), data.max(), 300)
-    axes[i, 1].plot(x, kde(x), color=color, linewidth=2)
-    axes[i, 1].axvline(media, color="red", linestyle="--", linewidth=1.5, label=f"Media: {media:.2f}")
-    axes[i, 1].axvline(mediana, color="black", linestyle="-", linewidth=1.5, label=f"Mediana: {mediana:.2f}")
-    axes[i, 1].set_title(f"{col} — densidad")
-    axes[i, 1].legend(fontsize=9)
-
-    # Boxplot
-    axes[i, 2].boxplot(data, patch_artist=True, boxprops=dict(facecolor=color, alpha=0.7))
-    axes[i, 2].set_title(f"{col} — boxplot")
-
-plt.tight_layout()
-plt.show()
-```
-
 ![imputacion de datos sobre la mediana](assets/imputacion_de_datos_sobre_la_mediana_1.png)
-
-```python
-def imputar_mediana(df, columnas):
-    for col in columnas:
-        df[col] = df[col].fillna(df[col].median())
-    return df
-
-# Aplicar
-columnas_mediana = ["avg_session_minutes", "satisfaction_score"]
-trial_conversion_users = imputar_mediana(trial_conversion_users, columnas_mediana)
-
-# Verificar
-print(trial_conversion_users[["avg_session_minutes", "satisfaction_score"]].isnull().sum())
-```
-
-```text
-avg_session_minutes    0
-satisfaction_score     0
-dtype: int64
-```
 
 A partir del análisis gráfico de las variables avg_session_minutes y satisfaction_score, se pueden extraer las siguientes observaciones:
 Para la variable avg_session_minutes, se evidencia una distribución asimétrica positiva, donde la mayoría de los valores se concentran en rangos bajos, aproximadamente entre 5 y 25 minutos. Sin embargo, se observa la presencia de valores atípicos elevados
@@ -394,13 +314,9 @@ dtype: int64
 
 Se verifican que ya no hayan valores nulos dentro del dataset
 
-### Variable categorica
+## Variable categorica
 
 Para la variable preferred_plan_before_conversion se evidencia que es de tipo categórico, con tres categorías principales: Basic, Standard y Premium.
-
-```python
-print(trial_conversion_users["preferred_plan_before_conversion"].value_counts())
-```
 
 ```text
 preferred_plan_before_conversion
@@ -414,26 +330,12 @@ Se realiza un proceso de codificación, transformando cada categoría en un valo
 Basic → 0, Premium → 1 y Standard → 2. 
 Esta transformación permite que la variable pueda ser interpretada por el modelo sin perder la información original.
 
-```python
-label_encoder = LabelEncoder()
-trial_conversion_users["preferred_plan_encoded"] = label_encoder.fit_transform(
-    trial_conversion_users["preferred_plan_before_conversion"]
-)
-
-# Verificar
-print(trial_conversion_users[["preferred_plan_before_conversion", "preferred_plan_encoded"]].value_counts())
-```
-
 ```text
 preferred_plan_before_conversion  preferred_plan_encoded
 Basic                             0                         1018
 Standard                          2                          954
 Premium                           1                          528
 Name: count, dtype: int64
-```
-
-```python
-print(trial_conversion_users.dtypes)
 ```
 
 ```text
@@ -468,7 +370,7 @@ preferred_plan_encoded                int64
 dtype: object
 ```
 
-# FEATURE ENGINEERING
+# Feature Engineering
 
 En la etapa de creación de variables para el modelo, se seleccionan del dataset aquellas características que aportan información relevante para predecir la conversión del usuario. En particular, se priorizan las variables asociadas al comportamiento durante el período de prueba, ya que estas reflejan de manera más directa el nivel de interacción, compromiso y experiencia del usuario con la plataforma.
 
