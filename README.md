@@ -394,6 +394,39 @@ minutos_totales  intensidad_uso  engagement_score  intencion_comercial
 9            200.6             204                 9                    3
 ```
 
+# Base de datos SQL - SQLite
+
+Se crea la base de datos con los valores transformados. Y se consulta la correcta inserción de las tablas. 
+
+```text
+=== TABLA modelo_input ===
+        user_id  days_active_trial  sessions_count  avg_session_minutes  \
+0     USR-00001                 12              26                  8.5   
+1     USR-00002                  8              14                 10.8   
+2     USR-00003                  9              10                 13.3   
+3     USR-00004                 11              25                 12.5   
+4     USR-00005                 10              22                 15.5   
+...         ...                ...             ...                  ...   
+2495  USR-02496                  8              12                 21.7   
+2496  USR-02497                  8              16                 15.7   
+2497  USR-02498                 14              22                 15.8   
+2498  USR-02499                  8              12                 11.0   
+2499  USR-02500                 12              19                 13.3   
+
+      features_used  last_activity_gap_days  satisfaction_score  \
+0                11                      14                 7.2   
+1                 4                      17                 6.9   
+2                 9                       8                 8.2   
+3                12                      12                 8.8   
+4                11                      10                10.0   
+...             ...                     ...                 ...   
+2495             11                       9                10.0   
+2496              8                       0                 5.6   
+2497             11                       5                 6.5   
+2498              9                       5                 7.2   
+...
+```
+
 # Modelo de Regresión Lógistica
 
 ## Separación del dataset en train/test/validation
@@ -449,4 +482,3 @@ ROC-AUC   : 0.7362
 
 ![evaluación del modelo](assets/evaluacion_del_modelo_1.png)
 
-# Base de datos SQL - SQLite
