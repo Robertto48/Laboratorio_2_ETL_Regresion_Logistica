@@ -241,6 +241,8 @@ En el análisis de valores atípicos de las variables seleccionadas para el mode
 
 El gráfico muestra el efecto de la winsorización sobre la variable avg_session_minutes, comparando la distribución original con la transformada. Inicialmente, la variable presenta una fuerte asimetría positiva, con una cola larga hacia la derecha debido a la presencia de valores extremos elevados. Después del proceso de winsorización, se observa que estos valores atípicos han sido recortados a un límite superior, lo que reduce significativamente la dispersión y elimina la influencia de extremos excesivos sin perder la estructura general de los datos. Como resultado, la distribución se vuelve más concentrada y estable, facilitando su uso en el modelo y disminuyendo el impacto que los outliers podrían tener en el ajuste de la regresión logística.
 
+![efecto winsorizacion](assets/efecto_winsorizacion.jpeg)
+
 ## Imputacion de datos sobre la mediana
 
 ```text
@@ -277,10 +279,6 @@ Por otro lado, la variable satisfaction_score presenta una distribución aproxim
 
 Para las variables avg_session_minutes y satisfaction_score, se decide imputar los valores nulos utilizando la mediana, debido a que esta medida es robusta frente a valores atípicos y permite preservar la distribución original de los datos.
 
-```python
-trial_conversion_users.isnull().sum()
-```
-
 ```text
 user_id                             0
 signup_date                         0
@@ -312,7 +310,7 @@ selected_plan                       0
 dtype: int64
 ```
 
-Se verifican que ya no hayan valores nulos dentro del dataset
+Se verifican que ya no haya valores nulos dentro del dataset
 
 ## Variable categorica
 
@@ -382,35 +380,6 @@ emails_opened, webinar_attended, plan_page_views → engagement
 payment_method_on_file, discount_offered_pct → intención comercial
 trial_length_days, last_activity_gap_days → cercanía al cierre
 
-```python
-# Ratio de comportamiento
-trial_conversion_users["minutos_totales"] = (
-    trial_conversion_users["avg_session_minutes"] * trial_conversion_users["sessions_count"]
-)
-
-# Intensidad de uso
-trial_conversion_users["intensidad_uso"] = (
-    trial_conversion_users["features_used"] * trial_conversion_users["sessions_count"]
-)
-
-trial_conversion_users["engagement_score"] = (
-    trial_conversion_users["emails_opened"] +
-    trial_conversion_users["webinar_attended"] +
-    trial_conversion_users["plan_page_views"]
-)
-
-# Intención comercial
-trial_conversion_users["intencion_comercial"] = (
-    trial_conversion_users["payment_method_on_file"] +
-    trial_conversion_users["plan_page_views"] +
-    trial_conversion_users["discount_offered_pct"]
-)
-
-# Verificar
-print(trial_conversion_users[[ "minutos_totales", "intensidad_uso",
-                               "engagement_score", "intencion_comercial"]].head(10))
-```
-
 ```text
 minutos_totales  intensidad_uso  engagement_score  intencion_comercial
 0            221.0             286                 5                    1
@@ -425,38 +394,15 @@ minutos_totales  intensidad_uso  engagement_score  intencion_comercial
 9            200.6             204                 9                    3
 ```
 
-# MODELO DE REGRESIÓN LOGÍSTICA
+# Modelo de Regresión Lógistica
 
-### Separación del dataset en train/test/validation
+## Separación del dataset en train/test/validation
 
 Se realiza la preparación de los datos para el entrenamiento y evaluación del modelo. 
+
 Se definen las variables predictoras (X), seleccionando aquellas características relevantes del dataset. Luego, se define la variable objetivo (y), que en este caso indica si el usuario se convirtió a un plan pago.
+
 Se divide el dataset en tres subconjuntos: entrenamiento (60%), prueba (20%) y validación (20%).
-
-```python
-# Variables predictoras y objetivo
-X = trial_conversion_users[[
-    "days_active_trial", "sessions_count", "avg_session_minutes",
-    "features_used", "last_activity_gap_days", "satisfaction_score",
-    "preferred_plan_encoded", "minutos_totales", "intensidad_uso",
-    "engagement_score", "intencion_comercial"
-]]
-
-y = trial_conversion_users["converted_to_paid_plan"]
-
-# Split 60% train, 20% test, 20% validation
-X_train, X_temp, y_train, y_temp = train_test_split(X, y, test_size=0.4, random_state=42, stratify=y)
-X_test, X_val, y_test, y_val = train_test_split(X_temp, y_temp, test_size=0.5, random_state=42, stratify=y_temp)
-
-# Verificar
-print(f"Train      : {X_train.shape[0]} registros ({X_train.shape[0]/len(X)*100:.1f}%)")
-print(f"Test       : {X_test.shape[0]} registros ({X_test.shape[0]/len(X)*100:.1f}%)")
-print(f"Validation : {X_val.shape[0]} registros ({X_val.shape[0]/len(X)*100:.1f}%)")
-
-print(f"\nProporción target en Train      : {y_train.mean():.4f}")
-print(f"Proporción target en Test       : {y_test.mean():.4f}")
-print(f"Proporción target en Validation : {y_val.mean():.4f}")
-```
 
 ```text
 Train      : 1500 registros (60.0%)
@@ -467,21 +413,9 @@ Proporción target en Test       : 0.2340
 Proporción target en Validation : 0.2340
 ```
 
-### Escalado de las variables para los outliers
+## Escalado de las variables para los outliers
 
-```python
-scaler = RobustScaler()
-
-# Ajustar con train y transformar los tres conjuntos
-X_train_scaled = scaler.fit_transform(X_train)
-X_test_scaled = scaler.transform(X_test)
-X_val_scaled = scaler.transform(X_val)
-
-print("Escalado aplicado correctamente")
-print(f"Shape Train: {X_train_scaled.shape}")
-print(f"Shape Test : {X_test_scaled.shape}")
-print(f"Shape Val  : {X_val_scaled.shape}")
-```
+En esta etapa se realiza el escalado de las variables utilizando el método RobustScaler, con el objetivo de reducir el impacto de los valores atípicos en el modelo.
 
 ```text
 Escalado aplicado correctamente
@@ -490,60 +424,13 @@ Shape Test : (500, 11)
 Shape Val  : (500, 11)
 ```
 
-### Modelo regresión logistica
+## Modelo regresión lógistica
 
-```python
-# Entrenar el modelo
-modelo = LogisticRegression(random_state=42, max_iter=1000, class_weight="balanced")
-modelo.fit(X_train_scaled, y_train)
+Se utiliza un modelo de regresión logística para este problema ya que la variable objetivo converted_to_paid_plan es binaria (0 o 1), y este algoritmo está diseñado precisamente para predecir probabilidades entre 0 y 1.
 
-# Predicciones
-y_pred_test = modelo.predict(X_test_scaled)
-y_pred_val = modelo.predict(X_val_scaled)
+En este punto se entrena el modelo.
 
-print("Modelo entrenado correctamente")
-```
-
-```text
-Modelo entrenado correctamente
-```
-
-### Evaluación del modelo
-
-```python
-# Métricas Test
-print("=== MÉTRICAS EN TEST ===")
-print(f"Accuracy  : {accuracy_score(y_test, y_pred_test):.4f}")
-print(f"Precision : {precision_score(y_test, y_pred_test):.4f}")
-print(f"Recall    : {recall_score(y_test, y_pred_test):.4f}")
-print(f"F1        : {f1_score(y_test, y_pred_test):.4f}")
-print(f"ROC-AUC   : {roc_auc_score(y_test, modelo.predict_proba(X_test_scaled)[:,1]):.4f}")
-
-# Métricas Validation
-print("\n=== MÉTRICAS EN VALIDATION ===")
-print(f"Accuracy  : {accuracy_score(y_val, y_pred_val):.4f}")
-print(f"Precision : {precision_score(y_val, y_pred_val):.4f}")
-print(f"Recall    : {recall_score(y_val, y_pred_val):.4f}")
-print(f"F1        : {f1_score(y_val, y_pred_val):.4f}")
-print(f"ROC-AUC   : {roc_auc_score(y_val, modelo.predict_proba(X_val_scaled)[:,1]):.4f}")
-
-# Matrices de confusión
-fig, axes = plt.subplots(1, 2, figsize=(12, 4))
-for ax, (y_true, y_pred, titulo) in zip(axes, [
-    (y_test, y_pred_test, "Test"),
-    (y_val, y_pred_val, "Validation")
-]):
-    cm = confusion_matrix(y_true, y_pred)
-    sns.heatmap(cm, annot=True, fmt="d", cmap="Blues", ax=ax,
-                xticklabels=["No convirtió", "Convirtió"],
-                yticklabels=["No convirtió", "Convirtió"])
-    ax.set_title(f"Matriz de confusión — {titulo}", fontweight="bold")
-    ax.set_ylabel("Real")
-    ax.set_xlabel("Predicho")
-
-plt.tight_layout()
-plt.show()
-```
+## Evaluación del modelo
 
 ```text
 === MÉTRICAS EN TEST ===
